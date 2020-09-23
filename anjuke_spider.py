@@ -91,11 +91,11 @@ def extract_data(item):
     return name, address, price, unit_price, house_type, area, floor, build_year
 
 
-def crawl_all_page(cookie, latency, debug=False):
+def crawl_all_page(cookie, latency, debug=False, page_count=100):
     page_num = 1
     data_raw = []
     # while True:
-    for page in range(1, 61):
+    for page in range(1, page_count+1):
         try:
             html = get_html_by_page(page, cookie)
             data_page = extract_data_from_html(html)
@@ -137,13 +137,13 @@ def visual(df):
 
 
 def run(args):
-    data = crawl_all_page(args.cookie, args.latency, args.debug)
+    data = crawl_all_page(args.cookie, args.latency, args.debug, args.page)
     df = create_df(data)
     df = clean_data(df)
     # visual(df)
     df.sort_values('price', inplace=True)
     df.reset_index(drop=True, inplace=True)
-    #  保存 csv 文件
+    # 保存 csv 文件
     filename = time.strftime("%Y-%m-%d", time.localtime())
     csv_file = filename + '.csv'
     df.to_csv(csv_file, index=False)
@@ -153,6 +153,7 @@ def get_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--cookie', type=str, help='cookie.')
     parser.add_argument("-l", "--latency", type=float, help="latency between two request", default=1.0)
+    parser.add_argument("-p", "--page", type=int, help="page count for crawling")
     parser.add_argument("-d", dest="debug", action="store_true")
     parser.set_defaults(debug=False)
     args = parser.parse_args()
