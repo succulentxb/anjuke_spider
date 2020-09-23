@@ -46,7 +46,7 @@ def get_html_by_page(page, cookie):
 def extract_data_from_html(html):
     soup = BeautifulSoup(html)
     if soup.find("div", class_="error-page") is not None:
-        if soup.find("div", class_="error-page").div.text.contains("系统检测到"):
+        if "系统检测到" in soup.find("div", class_="error-page").div.text:
             print("命中反爬策略...")
             return None
     list_content = soup.find(id="houselist-mod-new")
@@ -73,12 +73,14 @@ def extract_data(item):
     house_type = details_items[0].text.strip()
     area = details_items[1].text.strip()
     floor = details_items[2].text.strip()
-    build_year = details_items[3].text.strip()
+    build_year = ""
+    if len(details_items) > 3:
+        build_year = details_items[3].text.strip()
     address = BeautifulSoup(details[1].find("span").text).prettify(formatter=lambda s: s.replace(u'\xa0', ' ')).strip()
     address = re.sub(r"\s+", " ", address)
     price_item = item.find("div", class_="pro-price")
-    price = price_item.find_all("span")[0].strong.text.strip() + price_item.find_all("span")[0].text.strip()
-    unit_price = price_item.find_all("span")[0].text.strip()
+    price = price_item.find_all("span")[0].text.strip()
+    unit_price = price_item.find_all("span")[1].text.strip()
     # if item.strong is not None:
     #     price = item.strong.text.strip()
     # else:
@@ -89,9 +91,10 @@ def extract_data(item):
 
 
 def crawl_all_page(cookie, latency, debug=False):
-    page = 1
+    page_num = 1
     data_raw = []
-    while True:
+    # while True:
+    for page in range(1, 61):
         try:
             time.sleep(latency)
             html = get_html_by_page(page, cookie)
@@ -100,14 +103,14 @@ def crawl_all_page(cookie, latency, debug=False):
                 break
             data_raw += data_page
             print('crawling {}th page ...'.format(page))
-            page += 1
+            page_num += 1
             if debug:
                 break
         except Exception as e:
             print('maybe cookie expired!')
             print("error=%s" % e)
             break
-    print('crawl {} pages in total.'.format(page-1))
+    print('crawl {} pages in total.'.format(page_num-1))
     return data_raw
 
 
