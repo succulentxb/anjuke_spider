@@ -1,6 +1,7 @@
 import time
 import re
 import argparse
+import random
 
 import requests
 from bs4 import BeautifulSoup
@@ -96,7 +97,6 @@ def crawl_all_page(cookie, latency, debug=False):
     # while True:
     for page in range(1, 61):
         try:
-            time.sleep(latency)
             html = get_html_by_page(page, cookie)
             data_page = extract_data_from_html(html)
             if not data_page:
@@ -106,6 +106,7 @@ def crawl_all_page(cookie, latency, debug=False):
             page_num += 1
             if debug:
                 break
+            time.sleep(latency + random.random()*5)
         except Exception as e:
             print('maybe cookie expired!')
             print("error=%s" % e)
